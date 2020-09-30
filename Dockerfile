@@ -3,7 +3,9 @@
 # Allow SSH connection to the container
 # Installed mc,htop
 ########################
-FROM ubuntu:16.04
+ARG build_name_image
+#
+FROM ubuntu:${build_name_image}
 MAINTAINER DevDotNet.Org <anton@devdotnet.org>
 LABEL maintainer="DevDotNet.Org <anton@devdotnet.org>"
 
