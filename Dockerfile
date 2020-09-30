@@ -5,7 +5,7 @@
 ########################
 ARG build_name_image
 #
-FROM ubuntu:${build_name_image}
+FROM ubuntu@${build_name_image}
 MAINTAINER DevDotNet.Org <anton@devdotnet.org>
 LABEL maintainer="DevDotNet.Org <anton@devdotnet.org>"
 
