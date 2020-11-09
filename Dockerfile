@@ -1,47 +1,50 @@
 ########################
 # Official Image Ubuntu with sshd
 # Allow SSH connection to the container
-# Installed mc,htop
+# Installed: openssh-server, mc,htop,
+# for net: ping, traceroute, telnet, host,
+# nslookup, iperf, nmap
 ########################
-ARG build_name_image
 #
-FROM ubuntu@01a2038b20d165ab7df81934f9849bdfbc59bd6f6322c5d11e341504f66ec266
+FROM ubuntu:18.04
 MAINTAINER DevDotNet.Org <anton@devdotnet.org>
 LABEL maintainer="DevDotNet.Org <anton@devdotnet.org>"
 
 #Base
 # Set the locale
-ENV LANGUAGE en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LC_ALL en_US.UTF-8
-RUN apt-get update &&  \
-	apt-get install -y locales && \
-	locale-gen en_US.UTF-8 && \
-	update-locale LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 LC_ALL=en_US.UTF-8 && \
-	dpkg-reconfigure --frontend noninteractive locales
 
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US.UTF-8
+
+# Password for ssh
+ENV PSWD=123456
+
+#Copy to image
+COPY copyables /
+
+#Install
+RUN apt-get update \
+	&& apt-get install -y mc htop openssh-server \
+#Net utils
+	&& apt-get install -y iputils-ping traceroute telnet dnsutils iperf nmap \
+#Cleaning
+	&& apt-get autoclean -y \
+	&& apt-get autoremove -y \
+	&& rm -rf /var/lib/{cache,log}/ \
+	&& rm -rf /var/lib/apt/lists/*.lz4 \
+	&& rm -rf /var/log/* \
+	&& rm -rf /tmp/* /var/tmp/* \
+	&& rm -rf /usr/share/doc/ \
+	&& rm -rf /usr/share/man/ \
+	&& chmod +x /docker-entrypoint.sh
+	
 #Main
 #Folder Data
 VOLUME /data
+
 #port SSH
 EXPOSE 22/tcp
-# Needed by scripts
-ENV PASSWORD=123456
 
-#Setup mc,htop,openssh-server
-RUN apt-get install -y mc htop openssh-server
-
-#Clear
-RUN apt-get autoclean -y && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/{cache,log}/ && \
-    rm -rf /var/lib/apt/lists/*.lz4 && \
-    rm -rf /tmp/* /var/tmp/* && \
-    rm -rf /usr/share/doc/ && \
-    rm -rf /usr/share/man/
-
-#Run
-ADD docker-entrypoint.sh /
-RUN chmod +x /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
+
 CMD ["/usr/sbin/sshd", "-D"]
